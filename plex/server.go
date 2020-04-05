@@ -72,20 +72,20 @@ func (s *Server) getServerInfo() (*api.ServerInfoResponse, error) {
 	return &serverInfoResponse, nil
 }
 
-func (s *Server) GetSessionCount() (int, error) {
+func (s *Server) GetSessionStatus() (*api.SessionList, error) {
 	sessionList := api.SessionList{}
 
 	body, err := s.get(fmt.Sprintf(StatusURI, s.BaseURL))
 	if err != nil {
-		return -1, err
+		return nil, err
 	}
 
 	err = json.Unmarshal(body, &sessionList)
 	if err != nil {
-		return -1, err
+		return nil, err
 	}
 
-	return sessionList.Size, nil
+	return &sessionList, nil
 }
 
 func (s *Server) GetLibrary() (*api.LibraryResponse, error) {

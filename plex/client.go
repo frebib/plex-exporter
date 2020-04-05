@@ -28,13 +28,32 @@ func (c *PlexClient) GetServerMetrics() (ServerMetric, error) {
 		Platform: c.server.Platform,
 	}
 
-	// Get active sessions
-	activeSessions, err := c.server.GetSessionCount()
+	// Get active session status
+	sessionStatus, err := c.server.GetSessionStatus()
 	if err != nil {
-		logger.Debugf("Could not get session count: %s", err)
+		logger.Debugf("Could not get session status: %s", err)
 		return serverMetric, err
 	}
-	serverMetric.ActiveSessions = activeSessions
+	serverMetric.ActiveSessions = sessionStatus.Size
+
+	for _, metadata := range sessionStatus.Metadata {
+		sessionMetric := SessionMetric{
+			Location: metadata.Session.Location,
+		}
+
+		playerMetric := PlayerMetric{
+			Device:   metadata.Player.Device,
+			Platform: metadata.Player.Platform,
+			Profile:  metadata.Player.Profile,
+			State:    metadata.Player.State,
+			Local:    metadata.Player.Local,
+			Relayed:  metadata.Player.Relayed,
+			Secure:   metadata.Player.Secure,
+		}
+
+		serverMetric.Sessions = append(serverMetric.Sessions, sessionMetric)
+		serverMetric.Players = append(serverMetric.Players, playerMetric)
+	}
 
 	// Get library metrics
 	library, err := c.server.GetLibrary()

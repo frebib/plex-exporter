@@ -37,10 +37,6 @@ func (c *PlexClient) GetServerMetrics() (ServerMetric, error) {
 	serverMetric.ActiveSessions = sessionStatus.Size
 
 	for _, metadata := range sessionStatus.Metadata {
-		sessionMetric := SessionMetric{
-			Location: metadata.Session.Location,
-		}
-
 		playerMetric := PlayerMetric{
 			Device:   metadata.Player.Device,
 			Platform: metadata.Player.Platform,
@@ -51,7 +47,6 @@ func (c *PlexClient) GetServerMetrics() (ServerMetric, error) {
 			Secure:   strconv.FormatBool(metadata.Player.Secure),
 		}
 
-		serverMetric.Sessions = append(serverMetric.Sessions, sessionMetric)
 		serverMetric.Players = append(serverMetric.Players, playerMetric)
 	}
 

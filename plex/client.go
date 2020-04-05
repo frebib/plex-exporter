@@ -46,9 +46,9 @@ func (c *PlexClient) GetServerMetrics() (ServerMetric, error) {
 			Platform: metadata.Player.Platform,
 			Profile:  metadata.Player.Profile,
 			State:    metadata.Player.State,
-			Local:    metadata.Player.Local,
-			Relayed:  metadata.Player.Relayed,
-			Secure:   metadata.Player.Secure,
+			Local:    strconv.FormatBool(metadata.Player.Local),
+			Relayed:  strconv.FormatBool(metadata.Player.Relayed),
+			Secure:   strconv.FormatBool(metadata.Player.Secure),
 		}
 
 		serverMetric.Sessions = append(serverMetric.Sessions, sessionMetric)

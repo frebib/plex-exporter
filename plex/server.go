@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
+	"dario.cat/mergo"
 	"github.com/arnarg/plex_exporter/config"
 	"github.com/arnarg/plex_exporter/plex/api"
-	"github.com/imdario/mergo"
 )
 
 type Server struct {

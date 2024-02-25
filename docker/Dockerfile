@@ -1,14 +1,22 @@
 FROM alpine:latest as certificates
-RUN apk update && apk add --no-cache ca-certificates && update-ca-certificates
 
-FROM golang:1.12 as builder
+RUN apk update && \
+    apk add --no-cache ca-certificates \
+    && update-ca-certificates
+
+# ~~~~~~~~~~~~~~
+
+FROM golang as builder
 WORKDIR /build
+COPY go.mod go.sum .
+RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app/plex_exporter main.go
+RUN CGO_ENABLED=0 go build -o /bin/plex_exporter .
+
+# ~~~~~~~~~~~~~~
 
 FROM scratch
 COPY --from=certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /app/plex_exporter /app/plex_exporter
+COPY --from=builder /bin/plex_exporter /bin/plex_exporter
 
-WORKDIR /app
-ENTRYPOINT [ "/app/plex_exporter" ]
+ENTRYPOINT ["/bin/plex_exporter"]

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"dario.cat/mergo"
 	"github.com/arnarg/plex_exporter/config"
 	"github.com/arnarg/plex_exporter/plex/api"
-	"github.com/imdario/mergo"
 )
 
 type PinRequest struct {

@@ -1,7 +1,7 @@
 package collector
 
 import (
-	"github.com/arnarg/plex_exporter/plex"
+	"github.com/frebib/plex-exporter/plex"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )

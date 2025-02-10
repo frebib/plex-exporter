@@ -1,4 +1,4 @@
-module github.com/arnarg/plex_exporter
+module github.com/frebib/plex-exporter
 
 go 1.23
 

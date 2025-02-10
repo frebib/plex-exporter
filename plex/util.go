@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"runtime"
 
-	v "github.com/arnarg/plex_exporter/version"
+	v "github.com/frebib/plex-exporter/version"
 )
 
 // SendRequest sends a HTTP request according to provided method and url.

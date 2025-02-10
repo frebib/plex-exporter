@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"dario.cat/mergo"
-	"github.com/arnarg/plex_exporter/config"
-	"github.com/arnarg/plex_exporter/plex/api"
+	"github.com/frebib/plex-exporter/config"
+	"github.com/frebib/plex-exporter/plex/api"
 )
 
 type Server struct {

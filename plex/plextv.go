@@ -26,7 +26,6 @@ type Pin struct {
 }
 
 func DiscoverServers(token string) ([]*Server, error) {
-	h := headers
 	httpClient := &http.Client{Timeout: time.Second * 10}
 	// This endpoint only supports XML.
 	// I want to specify the "Accept: application/xml" header
@@ -36,7 +35,7 @@ func DiscoverServers(token string) ([]*Server, error) {
 		"Accept":       "application/xml",
 		"X-Plex-Token": token,
 	}
-	maps.Copy(eh, h)
+	maps.Copy(eh, DefaultHeaders)
 
 	_, body, err := sendRequest("GET", "https://plex.tv/api/resources?includeHttps=1", eh, httpClient)
 	if err != nil {
@@ -78,7 +77,7 @@ func DiscoverServers(token string) ([]*Server, error) {
 // GetPinRequest creates a PinRequest using the Plex API and returns it.
 func GetPinRequest() (*PinRequest, error) {
 	httpClient := &http.Client{Timeout: time.Second * 10}
-	_, body, err := sendRequest("POST", "https://plex.tv/pins", headers, httpClient)
+	_, body, err := sendRequest("POST", "https://plex.tv/pins", DefaultHeaders, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +97,7 @@ func GetPinRequest() (*PinRequest, error) {
 // If it has not been authenticated it returns an empty string.
 func GetTokenFromPinRequest(p *PinRequest) (string, error) {
 	httpClient := &http.Client{Timeout: time.Second * 10}
-	_, body, err := sendRequest("GET", fmt.Sprintf("https://plex.tv/pins/%d", p.Id), headers, httpClient)
+	_, body, err := sendRequest("GET", fmt.Sprintf("https://plex.tv/pins/%d", p.Id), DefaultHeaders, httpClient)
 	if err != nil {
 		return "", err
 	}

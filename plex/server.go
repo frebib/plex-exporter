@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"maps"
 	"net/http"
+	"runtime"
 	"time"
 
 	"github.com/frebib/plex-exporter/config"
 	"github.com/frebib/plex-exporter/plex/api"
+	"github.com/frebib/plex-exporter/version"
 )
 
 type Server struct {
@@ -29,7 +31,21 @@ const StatusURI = "%s/status/sessions"
 const LibraryURI = "%s/library/sections"
 const SectionURI = "%s/library/sections/%d/all"
 
+var DefaultHeaders = map[string]string{
+	"User-Agent":               fmt.Sprintf("plex_exporter/%s", version.Version),
+	"Accept":                   "application/json",
+	"X-Plex-Platform":          runtime.GOOS,
+	"X-Plex-Version":           version.Version,
+	"X-Plex-Client-Identifier": fmt.Sprintf("plex-exporter-v%s", version.Version),
+	"X-Plex-Device-Name":       "Plex Exporter",
+	"X-Plex-Product":           "Plex Exporter",
+	"X-Plex-Device":            runtime.GOOS,
+}
+
 func NewServer(c config.PlexServerConfig) (*Server, error) {
+	headers := maps.Clone(DefaultHeaders)
+	headers["X-Plex-Token"] = c.Token
+
 	server := &Server{
 		BaseURL: c.BaseURL,
 		token:   c.Token,
@@ -41,7 +57,6 @@ func NewServer(c config.PlexServerConfig) (*Server, error) {
 			},
 		},
 	}
-	server.headers["X-Plex-Token"] = c.Token
 
 	serverInfo, err := server.getServerInfo()
 	if err != nil {
@@ -111,7 +126,7 @@ func (s *Server) GetSectionSize(id int) (int, error) {
 		"X-Plex-Container-Start": "0",
 		"X-Plex-Container-Size":  "0",
 	}
-	maps.Copy(eh, headers)
+	maps.Copy(eh, s.headers)
 
 	sectionResponse := api.SectionResponse{}
 

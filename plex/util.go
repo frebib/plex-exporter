@@ -1,12 +1,8 @@
 package plex
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
-	"runtime"
-
-	v "github.com/frebib/plex-exporter/version"
 )
 
 // SendRequest sends a HTTP request according to provided method and url.
@@ -43,15 +39,4 @@ func createRequest(m, u string, h map[string]string) (*http.Request, error) {
 	}
 
 	return req, nil
-}
-
-var headers = map[string]string{
-	"User-Agent":               fmt.Sprintf("plex_exporter/%s", v.Version),
-	"Accept":                   "application/json",
-	"X-Plex-Platform":          runtime.GOOS,
-	"X-Plex-Version":           v.Version,
-	"X-Plex-Client-Identifier": fmt.Sprintf("plex-exporter-v%s", v.Version),
-	"X-Plex-Device-Name":       "Plex Exporter",
-	"X-Plex-Product":           "Plex Exporter",
-	"X-Plex-Device":            runtime.GOOS,
 }

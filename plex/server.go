@@ -4,10 +4,10 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net/http"
 	"time"
 
-	"dario.cat/mergo"
 	"github.com/frebib/plex-exporter/config"
 	"github.com/frebib/plex-exporter/plex/api"
 )
@@ -111,7 +111,7 @@ func (s *Server) GetSectionSize(id int) (int, error) {
 		"X-Plex-Container-Start": "0",
 		"X-Plex-Container-Size":  "0",
 	}
-	mergo.Merge(&eh, headers)
+	maps.Copy(eh, headers)
 
 	sectionResponse := api.SectionResponse{}
 

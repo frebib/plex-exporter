@@ -5,7 +5,6 @@ go 1.23
 toolchain go1.23.5
 
 require (
-	dario.cat/mergo v1.0.1
 	github.com/prometheus/client_golang v1.20.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/urfave/cli v1.22.16

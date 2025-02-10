@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"maps"
 	"net/http"
 	"strings"
 	"time"
 
-	"dario.cat/mergo"
 	"github.com/frebib/plex-exporter/config"
 	"github.com/frebib/plex-exporter/plex/api"
 )
@@ -36,7 +36,7 @@ func DiscoverServers(token string) ([]*Server, error) {
 		"Accept":       "application/xml",
 		"X-Plex-Token": token,
 	}
-	mergo.Merge(&eh, h)
+	maps.Copy(eh, h)
 
 	_, body, err := sendRequest("GET", "https://plex.tv/api/resources?includeHttps=1", eh, httpClient)
 	if err != nil {

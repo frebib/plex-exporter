@@ -2,7 +2,6 @@ package plex
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"maps"
 	"net/http"
@@ -58,7 +57,7 @@ func NewServer(c config.PlexServerConfig) (*Server, error) {
 		},
 	}
 
-	serverInfo, err := server.getServerInfo()
+	serverInfo, err := server.GetServerInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -71,84 +70,31 @@ func NewServer(c config.PlexServerConfig) (*Server, error) {
 	return server, nil
 }
 
-func (s *Server) getServerInfo() (*api.ServerInfoResponse, error) {
-	serverInfoResponse := api.ServerInfoResponse{}
-
-	body, err := s.get(fmt.Sprintf(ServerInfoURI, s.BaseURL))
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(body, &serverInfoResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &serverInfoResponse, nil
+func (s *Server) GetServerInfo() (*api.ServerInfoResponse, error) {
+	return httpRequest[api.ServerInfoResponse](s.httpClient, http.MethodGet, fmt.Sprintf(ServerInfoURI, s.BaseURL), s.headers)
 }
 
 func (s *Server) GetSessionStatus() (*api.SessionList, error) {
-	sessionList := api.SessionList{}
-
-	body, err := s.get(fmt.Sprintf(StatusURI, s.BaseURL))
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(body, &sessionList)
-	if err != nil {
-		return nil, err
-	}
-
-	return &sessionList, nil
+	return httpRequest[api.SessionList](s.httpClient, http.MethodGet, fmt.Sprintf(StatusURI, s.BaseURL), s.headers)
 }
 
 func (s *Server) GetLibrary() (*api.LibraryResponse, error) {
-	libraryResponse := api.LibraryResponse{}
-
-	body, err := s.get(fmt.Sprintf(LibraryURI, s.BaseURL))
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(body, &libraryResponse)
-	if err != nil {
-		return nil, err
-	}
-
-	return &libraryResponse, nil
+	return httpRequest[api.LibraryResponse](s.httpClient, http.MethodGet, fmt.Sprintf(LibraryURI, s.BaseURL), s.headers)
 }
 
 func (s *Server) GetSectionSize(id int) (int, error) {
 	// We don't want to get every item in the library section
 	// these headers make sure we only get metadata
-	eh := map[string]string{
+	headers := map[string]string{
 		"X-Plex-Container-Start": "0",
 		"X-Plex-Container-Size":  "0",
 	}
-	maps.Copy(eh, s.headers)
+	maps.Copy(headers, s.headers)
 
-	sectionResponse := api.SectionResponse{}
-
-	_, body, err := sendRequest("GET", fmt.Sprintf(SectionURI, s.BaseURL, id), eh, s.httpClient)
+	url := fmt.Sprintf(SectionURI, s.BaseURL, id)
+	resp, err := httpRequest[api.SectionResponse](s.httpClient, http.MethodGet, url, headers)
 	if err != nil {
 		return -1, err
 	}
-
-	err = json.Unmarshal(body, &sectionResponse)
-	if err != nil {
-		return -1, err
-	}
-
-	return sectionResponse.TotalSize, nil
-}
-
-func (s *Server) get(url string) ([]byte, error) {
-	_, body, err := sendRequest("GET", url, s.headers, s.httpClient)
-	return body, err
-}
-
-func (s *Server) head(url string) (*http.Response, error) {
-	resp, _, err := sendRequest("HEAD", url, s.headers, s.httpClient)
-	return resp, err
+	return resp.TotalSize, nil
 }

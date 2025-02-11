@@ -1,8 +1,6 @@
 package plex
 
 import (
-	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"maps"
@@ -34,26 +32,19 @@ func DiscoverServers(token string) ([]*Server, error) {
 	// I want to specify the "Accept: application/xml" header
 	// to make sure that if the endpoint does support JSON in
 	// the future it won't break the application.
-	eh := map[string]string{
+	headers := map[string]string{
 		"Accept":       "application/xml",
 		"X-Plex-Token": token,
 	}
-	maps.Copy(eh, DefaultHeaders)
+	maps.Copy(headers, DefaultHeaders)
 
-	_, body, err := sendRequest("GET", "https://plex.tv/api/resources?includeHttps=1", eh, httpClient)
+	resp, err := httpRequest[api.DeviceList](httpClient, http.MethodGet, "https://plex.tv/api/resources?includeHttps=1", headers)
 	if err != nil {
 		return nil, err
 	}
 
-	deviceList := api.DeviceList{}
-
-	err = xml.Unmarshal(body, &deviceList)
-	if err != nil {
-		return nil, err
-	}
-
-	servers := []*Server{}
-	for _, device := range deviceList.Devices {
+	var servers []*Server
+	for _, device := range resp.Devices {
 		// Device is a server and is owned by user
 		if strings.Contains(device.Roles, "server") && device.Owned {
 			// Loop over the server's connections and use the first one to work
@@ -80,19 +71,7 @@ func DiscoverServers(token string) ([]*Server, error) {
 // GetPinRequest creates a PinRequest using the Plex API and returns it.
 func GetPinRequest() (*PinRequest, error) {
 	httpClient := &http.Client{Timeout: time.Second * 10}
-	_, body, err := sendRequest("POST", "https://plex.tv/pins", DefaultHeaders, httpClient)
-	if err != nil {
-		return nil, err
-	}
-
-	pinRequest := &PinRequest{}
-
-	err = json.Unmarshal(body, pinRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	return pinRequest, nil
+	return httpRequest[PinRequest](httpClient, http.MethodPost, "https://plex.tv/pins", DefaultHeaders)
 }
 
 // GetTokenFromPinRequest takes in a PinRequest and checks if it has been authenticated.
@@ -100,21 +79,13 @@ func GetPinRequest() (*PinRequest, error) {
 // If it has not been authenticated it returns an empty string.
 func GetTokenFromPinRequest(p *PinRequest) (string, error) {
 	httpClient := &http.Client{Timeout: time.Second * 10}
-	_, body, err := sendRequest("GET", fmt.Sprintf("https://plex.tv/pins/%d", p.Id), DefaultHeaders, httpClient)
+	resp, err := httpRequest[PinRequest](httpClient, http.MethodGet, fmt.Sprintf("https://plex.tv/pins/%d", p.Id), DefaultHeaders)
 	if err != nil {
 		return "", err
 	}
 
-	pinRequest := PinRequest{}
-
-	err = json.Unmarshal(body, &pinRequest)
-	if err != nil {
-		return "", err
-	}
-
-	if pinRequest.AuthToken == "" {
+	if resp.AuthToken == "" {
 		return "", ErrPinNotAuthorised
 	}
-
-	return pinRequest.AuthToken, nil
+	return resp.AuthToken, nil
 }

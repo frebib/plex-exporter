@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,7 +22,7 @@ func Token(c *cli.Context) error {
 
 	pinRequest, err := plex.GetPinRequest()
 	if err != nil {
-		return fmt.Errorf("Could not make a pin request: %s", err)
+		return fmt.Errorf("could not make a pin request: %w", err)
 	}
 
 	fmt.Printf("\n\tGot PIN Code: %s\n\tGo to https://plex.tv/pin and enter pin to authenticate.\n\n", pinRequest.Code)
@@ -31,14 +32,14 @@ func Token(c *cli.Context) error {
 	for t := range ticker.C {
 		if pinRequest.Expiry.Before(t) {
 			ticker.Stop()
-			return fmt.Errorf("PIN expired, exiting.")
+			return fmt.Errorf("PIN expired, exiting")
 		}
 
 		token, err := plex.GetTokenFromPinRequest(pinRequest)
 		if err != nil {
-			if err.Error() != plex.ErrorPinNotAuthorized {
+			if !errors.Is(err, plex.ErrPinNotAuthorised) {
 				ticker.Stop()
-				return fmt.Errorf("Could not check PIN request: %s", err)
+				return fmt.Errorf("could not check PIN request: %w", err)
 			}
 		} else {
 			fmt.Printf("Authenticated successfully!\nYour token is: %s\n", token)

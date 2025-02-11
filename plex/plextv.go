@@ -3,6 +3,7 @@ package plex
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"maps"
 	"net/http"
@@ -12,6 +13,8 @@ import (
 	"github.com/frebib/plex-exporter/config"
 	"github.com/frebib/plex-exporter/plex/api"
 )
+
+var ErrPinNotAuthorised = errors.New("pin not authorised")
 
 type PinRequest struct {
 	Pin `json:"pin"`
@@ -110,7 +113,7 @@ func GetTokenFromPinRequest(p *PinRequest) (string, error) {
 	}
 
 	if pinRequest.AuthToken == "" {
-		return "", fmt.Errorf(ErrorPinNotAuthorized)
+		return "", ErrPinNotAuthorised
 	}
 
 	return pinRequest.AuthToken, nil

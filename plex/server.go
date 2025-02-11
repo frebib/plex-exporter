@@ -16,8 +16,6 @@ import (
 type Server struct {
 	ID         string
 	Name       string
-	Version    string
-	Platform   string
 	BaseURL    string
 	token      string
 	httpClient *http.Client
@@ -57,21 +55,20 @@ func NewServer(c config.PlexServerConfig) (*Server, error) {
 		},
 	}
 
-	serverInfo, err := server.GetServerInfo()
-	if err != nil {
-		return nil, err
-	}
-
-	server.ID = serverInfo.ID
-	server.Name = serverInfo.Name
-	server.Version = serverInfo.Version
-	server.Platform = serverInfo.Platform
-
-	return server, nil
+	// Check the server, and pre-cache server id/name
+	_, err := server.GetServerInfo()
+	return server, err
 }
 
 func (s *Server) GetServerInfo() (*api.ServerInfoResponse, error) {
-	return httpRequest[api.ServerInfoResponse](s.httpClient, http.MethodGet, fmt.Sprintf(ServerInfoURI, s.BaseURL), s.headers)
+	info, err := httpRequest[api.ServerInfoResponse](s.httpClient, http.MethodGet, fmt.Sprintf(ServerInfoURI, s.BaseURL), s.headers)
+	if err != nil {
+		return nil, err
+	}
+	// Cache last-known ID (shouldn't ever change) and name
+	s.ID = info.ID
+	s.Name = info.Name
+	return info, nil
 }
 
 func (s *Server) GetSessionStatus() (*api.SessionList, error) {

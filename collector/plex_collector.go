@@ -74,7 +74,7 @@ func (c *PlexCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	c.Logger.Trace(v)
+	c.Logger.Tracef("Server metrics: %#v", v)
 	c.serverInfo.WithLabelValues(v.Version, v.Platform).Set(1)
 	c.activeSessionCount.WithLabelValues().Set(float64(v.ActiveSessions))
 
